@@ -1,21 +1,55 @@
-import { StatusBar } from 'expo-status-bar';
-import React from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import React from 'react'
+import { useSelector } from 'react-redux'
+import { NavigationContainer } from '@react-navigation/native'
+import { createStackNavigator } from '@react-navigation/stack'
 
-export default function App() {
+import SignIn from './src/components/SignIn'
+import Home from './src/components/Home'
+import Chatroom from './src/components/Chatroom'
+import userSlice from './src/features/userSlice'
+
+const Stack = createStackNavigator()
+
+function App() {
+  const user = useSelector(state => userSlice.state.user)
+
   return (
-    <View style={styles.container}>
-      <Text>Open up App.js to start working on your app!</Text>
-      <StatusBar style="auto" />
-    </View>
+    <NavigationContainer>
+      <Stack.Navigator
+        initialRouteName='Home'
+        screenOptions= {{
+          headerStyle: {
+            backgroundColor: '#00796B',
+          },
+          headerTintColor: '#fff'
+        }}
+      >
+        {user ? (
+          <Stack.Screen
+            name="SignIn"
+            component={SignIn}
+            options={{
+              title: 'Sign In',
+              headerStyle: {
+                alignItems: 'center'
+              },
+            }}
+          />
+        ) : (
+          <>
+            <Stack.Screen
+              name="Home"
+              component={Home}
+            />
+            <Stack.Screen
+              name="Chat"
+              component={Chatroom}
+            />
+          </>
+        )}
+      </Stack.Navigator>
+    </NavigationContainer>
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-});
+export default App
