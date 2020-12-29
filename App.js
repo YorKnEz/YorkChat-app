@@ -1,54 +1,20 @@
 import React from 'react'
-import { useSelector } from 'react-redux'
-import { NavigationContainer } from '@react-navigation/native'
-import { createStackNavigator } from '@react-navigation/stack'
 
-import SignIn from './src/components/SignIn'
-import Home from './src/components/Home'
-import Chatroom from './src/components/Chatroom'
-import userSlice from './src/features/userSlice'
+import { Provider } from 'react-redux';
 
-const Stack = createStackNavigator()
+import { PersistGate } from 'redux-persist/integration/react';
+
+import NavigationContainer from './src/components/Navigation';
+
+import store, { persistor } from './src/features/store'
 
 function App() {
-  const user = useSelector(state => userSlice.state.user)
-
   return (
-    <NavigationContainer>
-      <Stack.Navigator
-        initialRouteName='Home'
-        screenOptions= {{
-          headerStyle: {
-            backgroundColor: '#00796B',
-          },
-          headerTintColor: '#fff'
-        }}
-      >
-        {user ? (
-          <Stack.Screen
-            name="SignIn"
-            component={SignIn}
-            options={{
-              title: 'Sign In',
-              headerStyle: {
-                alignItems: 'center'
-              },
-            }}
-          />
-        ) : (
-          <>
-            <Stack.Screen
-              name="Home"
-              component={Home}
-            />
-            <Stack.Screen
-              name="Chat"
-              component={Chatroom}
-            />
-          </>
-        )}
-      </Stack.Navigator>
-    </NavigationContainer>
+    <Provider store={store}>
+      {/* <PersistGate loading={null} persistor={persistor}> */}
+        <NavigationContainer />
+      {/* </PersistGate> */}
+    </Provider>
   );
 }
 

@@ -1,62 +1,75 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { FlatList, StyleSheet, Text, View, TextInput, TouchableOpacity, Button } from 'react-native';
 import { Feather } from '@expo/vector-icons'
-import io from 'socket.io-client'
 
-const socket = io("http://192.168.100.13:3000");
+import socket from '../features/socket'
+import { useDispatch, useSelector } from 'react-redux';
+import { chatroomsSlice } from '../features/chatroomsSlice';
+import Message from './Message'
 
-function Chatroom() {
-  const [chatMessage, setChatMessage] = useState('')
-  const [chatMessages, setChatMessages] = useState([])
-  const inputRef = useRef(null)
+function Chatroom({ route }) {
+  const [chatMessage, setChatMessage] = useState('') // input
 
-  useEffect(() => {
-    socket.on('chat message', msg => {
-      let tempArr = chatMessages
+  const inputRef = useRef(null) // for clearing the input
 
-      tempArr.push({ message: msg})
+  const dispatch = useDispatch() // dispatcher
 
-      console.log('tempArr: ' + tempArr)
+  const user = useSelector(state => state.user)
+  const chatrooms = useSelector(state => state.chatrooms)
+  const chatroom = chatrooms.find(chatroom => chatroom.id == route.params.id)
+  const messages = chatroom ? chatroom.messages : null
 
-      setChatMessages(tempArr)
-    })
-  }, [])
+  const sendMessage = () => {
+    // get the date of the message
+    const d = new Date()
+    const m = d.getMinutes()
+    const h = d.getHours()
 
-  const renderItem = ({ item }) => (
-    <Text style={styles.message}>{item.message}</Text>
-  )
-
-  const submitChatMessage = () => {
-    if (chatMessage !== '') {
-      socket.emit('chat message', chatMessage)
-      console.log('message:' + chatMessage)
-      setChatMessage('')
-      inputRef.current.clear()
+    // create the message object
+    const message = {
+      content: chatMessage,
+      timestamp: h + ':' + m,
+      sender: user,
+      id: messages.length + 1
     }
+
+    // add the message to the user's chatroom
+    dispatch(chatroomsSlice.actions.sendMessage({ chatroomID: chatroom.id, message: message }))
+    
+    console.log(chatroom.users[1].name)
+
+    // send the message to the other user
+    socket.emit('send message', {
+      otherUserID: chatroom.users[1].id,
+      chatroomID: chatroom.id,
+      message: message
+    })
+    console.log('message sent')
+
+    // clear the state used to store the message and the message bar
+    setChatMessage('')
+    inputRef.current.clear()
   }
   
   return (
     <View style={styles.container}>
       <FlatList
-        data={chatMessages}
-        renderItem={renderItem}
-        keyExtractor={(item, index) => String(index)}
-      />
-      <Button
-        title='Test'
-        onPress={() => console.log(chatMessages)}
+        style={{ width: '100%' }}
+        data={messages}
+        renderItem={item => (
+          <Message user={user} message={item.item} />
+        )}
+        keyExtractor={item => String(item.id)}
       />
       <View style={styles.sendBar}>
         <TextInput
           style={styles.input}
-          onChangeText={chatMessage => {
-          setChatMessage(chatMessage)
-          }}
+          onChangeText={chatMessage => setChatMessage(chatMessage)}
           placeholder='Write a message'
           ref={inputRef}
         />
         <TouchableOpacity
-          onPress={submitChatMessage}
+          onPress={sendMessage}
         >
           <Feather name="send" size={24} color="lightgray" />
         </TouchableOpacity>
@@ -72,13 +85,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  message: {
-    fontSize: 18,
-    color: 'lightgray'
-  },
   input: {
     height: 40,
-    width: '80%',
+    width: '90%',
   },
   sendBar: {
     flexDirection: 'row',

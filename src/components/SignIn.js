@@ -1,12 +1,16 @@
 import React from 'react'
-import { StyleSheet } from 'react-native'
-import { dispatch } from '../features/store'
+import { StyleSheet, View, Button } from 'react-native'
+import { useDispatch } from 'react-redux';
 
-import signIn from '../features/userSlice'
+import socket from '../features/socket'
+
+import { userSlice } from '../features/userSlice'
 
 import * as Google from 'expo-google-app-auth'
 
 function SignIn() {
+  const dispatch = useDispatch();
+
   async function signInWithGoogleAsync() {
     try {
       const result = await Google.logInAsync({
@@ -22,17 +26,17 @@ function SignIn() {
           .then(response => response.json())
           .catch(error => {console.error('Fetch error: ', error)})
 
-        const payload = {
-          user: userInfoResponse,
-          chatroom: null // query obj from a database probably
-        }
+        const payload = userInfoResponse
 
-        dispatch(signIn(payload))
+        dispatch(userSlice.actions.signIn(payload))
+        
+        socket.emit('log in', payload)
+
       } else {
-        return { cancelled: true }
+        // return { cancelled: true }
       }
     } catch (e) {
-      return { error: true }
+      // return { error: true }
     }
   }
 
