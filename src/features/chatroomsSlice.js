@@ -1,4 +1,4 @@
-import { createSlice } from "@reduxjs/toolkit";
+import { createSlice } from "@reduxjs/toolkit"
 import produce from "immer"
 
 const initialState = []
@@ -7,6 +7,10 @@ export const chatroomsSlice = createSlice({
   name: 'chatrooms',
   initialState,
   reducers: {
+    updateChats(state, action) {
+      // the action.payload will be the array of chatrooms
+      return action.payload
+    },
     newChat(state, action) {
       // the action.payload will be a new chatroom
 
@@ -31,24 +35,6 @@ export const chatroomsSlice = createSlice({
       })
 
       return newState
-    },
-    sendMessage(state, action) {
-      // the action.payload will be the chatroom id and the message itself
-      const chatrooms = state
-
-      const chatroom = chatrooms.find(e => e.id == action.payload.chatroomID)
-      const message = chatroom.messages.find(msg => msg.id == action.payload.message.id)
-
-      if (!message) {
-        const chatroomIndex = chatrooms.findIndex(chatroom => chatroom.id == action.payload.chatroomID)
-        
-        const newMessages = produce(state[chatroomIndex].messages, draft => {
-          draft.push(action.payload.message)
-        })
-
-        state[chatroomIndex].messages = newMessages
-      }
-      else return state
     }
   }
 })

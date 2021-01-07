@@ -2,11 +2,13 @@ import React from 'react'
 import { StyleSheet, View, Button } from 'react-native'
 import { useDispatch } from 'react-redux';
 
+import axios from 'axios'
 import socket from '../features/socket'
 
 import { userSlice } from '../features/userSlice'
 
 import * as Google from 'expo-google-app-auth'
+import { chatroomsSlice } from '../features/chatroomsSlice';
 
 function SignIn() {
   const dispatch = useDispatch();
@@ -19,19 +21,22 @@ function SignIn() {
       })
 
       if (result.type === 'success') {
-        let userInfoResponse = await fetch('https://www.googleapis.com/userinfo/v2/me',
-          {
-            headers: { Authorization: `Bearer ${result.accessToken}` },
-          })
-          .then(response => response.json())
-          .catch(error => {console.error('Fetch error: ', error)})
+        const user = await axios({
+          method: 'GET',
+          url: 'https://www.googleapis.com/userinfo/v2/me',
+          headers: { Authorization: `Bearer ${result.accessToken}` }
+        })
 
-        const payload = userInfoResponse
+        console.log(user.data)
 
-        dispatch(userSlice.actions.signIn(payload))
-        
-        socket.emit('log in', payload)
+        const login = await axios({
+          method: 'POST',
+          url: 'http://192.168.100.13:3000/login',
+          data: user.data
+        })
 
+        const loggedUser = {...login.data.user, token: login.data.token}
+        dispatch(userSlice.actions.signIn(loggedUser))
       } else {
         // return { cancelled: true }
       }
@@ -45,6 +50,49 @@ function SignIn() {
       <Button
         title='LOG IN WITH GOOGLE'
         onPress={async () => await signInWithGoogleAsync()}
+      />
+      <Button
+        title='Test user 1'
+        onPress={async () => {
+          const login = await axios({
+            method: 'POST',
+            url: 'http://192.168.100.13:3000/login',
+            data: {
+              email: 'alexmitreanu04@gmail.com',
+              verifiedEmail: true,
+              given_name: 'Alex',
+              family_name: 'Mitreanu',
+              name: 'Alex Mitreanu',
+              locale: 'ro',
+              picture: 'https://lh3.googleusercontent.com/a-/AOh14GgniH8lGvPAzXGHZBmRA7i_Gpg_mJwOSROA2mXJiA=s96-c'
+            }
+          })
+
+          const loggedUser = {...login.data.user, token: login.data.token}
+          dispatch(userSlice.actions.signIn(loggedUser))
+        }}
+      />
+      <Button
+        title='Test user 2'
+        onPress={async () => {
+          const login = await axios({
+            method: 'POST',
+            url: 'http://192.168.100.13:3000/login',
+            data: {
+              email: 'yorknez@gmail.com',
+              verifiedEmail: true,
+              given_name: 'Prietenul',
+              family_name: 'Naturii',
+              name: 'Prietenul Naturii',
+              locale: 'ro',
+              picture: 'https://lh3.googleusercontent.com/a-/AOh14GgpSVbD7mMQTME20eTnzbfy3UuH-J4ZvkrPJPTN=s96-c'
+            }
+          })
+
+          const loggedUser = {...login.data.user, token: login.data.token}
+          dispatch(userSlice.actions.signIn(loggedUser))
+          dispatch(chatroomsSlice.actions.updateChats([]))
+        }}
       />
     </View>
   )

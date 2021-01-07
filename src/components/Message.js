@@ -4,7 +4,7 @@ import { StyleSheet, View, Text } from 'react-native'
 export default function Message({ user, message }) {
   return (
     <View style={styles.container}>
-      {user.id == message.sender.id ? (
+      {user.id == message.UserId? (
         <>
           <Text style={styles.userMessage}>{message.content}</Text>
         </>

@@ -24,7 +24,7 @@ function ChatsTitle({ id }) {
   return (
     <View style={styles.container}>
       <View style={styles.subcontainer}>
-        <Image style={styles.image} source={{ uri: chatroom ? chatroom.users[1].picture : null }} />
+        <Image style={styles.image} source={{ uri: chatroom ? chatroom.picture : null }} />
         <Text style={styles.title}>{chatroom ? chatroom.name : ''}</Text>
       </View>
       <TouchableOpacity style={styles.deleteButton} onPress={() => deleteChat()}>

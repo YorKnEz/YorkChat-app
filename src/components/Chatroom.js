@@ -1,11 +1,16 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { FlatList, StyleSheet, Text, View, TextInput, TouchableOpacity, Button } from 'react-native';
-import { Feather } from '@expo/vector-icons'
+import { useDispatch, useSelector } from 'react-redux'
+
+import axios from 'axios'
+
+import Message from './Message'
 
 import socket from '../features/socket'
-import { useDispatch, useSelector } from 'react-redux';
-import { chatroomsSlice } from '../features/chatroomsSlice';
-import Message from './Message'
+import { chatroomsSlice } from '../features/chatroomsSlice'
+import { messagesSlice } from '../features/messagesSlice'
+
+import { Feather } from '@expo/vector-icons'
 
 function Chatroom({ route }) {
   const [chatMessage, setChatMessage] = useState('') // input
@@ -15,36 +20,46 @@ function Chatroom({ route }) {
   const dispatch = useDispatch() // dispatcher
 
   const user = useSelector(state => state.user)
-  const chatrooms = useSelector(state => state.chatrooms)
-  const chatroom = chatrooms.find(chatroom => chatroom.id == route.params.id)
-  const messages = chatroom ? chatroom.messages : null
+  
+  const allMessages = useSelector(state => state.messages)
+  const chatroomMessages = allMessages.find(e => e.chatroomId === route.params.id)
+  const messages = chatroomMessages ? chatroomMessages.messages : []
 
-  const sendMessage = () => {
-    // get the date of the message
-    const d = new Date()
-    const m = d.getMinutes()
-    const h = d.getHours()
+  useEffect(() => {
+    const interval = setInterval(async () => {
+      const result = await axios({
+        method: 'GET',
+        url: 'http://192.168.100.13:3000/chatrooms/' + route.params.id + '/messages',
+        headers: {
+          'Authorization': user.token
+        }
+      })
 
+      dispatch(messagesSlice.actions.updateMessages({
+        chatroomId: route.params.id,
+        messages: result.data.messages
+      }))
+    }, 5000)
+    return () => clearInterval(interval)
+  }, [])
+
+  const sendMessage = async () => {
     // create the message object
-    const message = {
-      content: chatMessage,
-      timestamp: h + ':' + m,
-      sender: user,
-      id: messages.length + 1
-    }
-
-    // add the message to the user's chatroom
-    dispatch(chatroomsSlice.actions.sendMessage({ chatroomID: chatroom.id, message: message }))
-    
-    console.log(chatroom.users[1].name)
-
-    // send the message to the other user
-    socket.emit('send message', {
-      otherUserID: chatroom.users[1].id,
-      chatroomID: chatroom.id,
-      message: message
+    const result = await axios({
+      method: 'POST',
+      url: 'http://192.168.100.13:3000/chatrooms/' + route.params.id + '/messages',
+      headers: {
+        'Authorization': user.token
+      },
+      data: {
+        content: chatMessage
+      }
     })
-    console.log('message sent')
+
+    dispatch(messagesSlice.actions.addMessage({
+      chatroomId: route.params.id,
+      message: result.data.message
+    }))
 
     // clear the state used to store the message and the message bar
     setChatMessage('')
@@ -60,6 +75,7 @@ function Chatroom({ route }) {
           <Message user={user} message={item.item} />
         )}
         keyExtractor={item => String(item.id)}
+        inverted={true}
       />
       <View style={styles.sendBar}>
         <TextInput
@@ -69,7 +85,7 @@ function Chatroom({ route }) {
           ref={inputRef}
         />
         <TouchableOpacity
-          onPress={sendMessage}
+          onPress={async() => await sendMessage()}
         >
           <Feather name="send" size={24} color="lightgray" />
         </TouchableOpacity>

@@ -7,7 +7,7 @@ function ChatroomItem({ chatroom, onPress }) {
       <Image style={styles.picture} source={{ uri: chatroom ? chatroom.picture : null }}/>
       <View style={styles.subcontainer}>
         <Text style={styles.title}>{chatroom.name}</Text>
-        <Text style={styles.lastMessage}>{chatroom.messages.length > 0 ? chatroom.messages[chatroom.messages.length-1].content : ''}</Text>
+        <Text style={styles.lastMessage}>{chatroom.lastMessage}</Text>
       </View>
     </Pressable>
   )

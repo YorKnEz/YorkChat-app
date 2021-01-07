@@ -3,10 +3,13 @@ import { StyleSheet, View, Text, Button, FlatList, TouchableOpacity } from 'reac
 import { useDispatch, useSelector } from 'react-redux'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 
+import axios from 'axios'
+
+import ChatroomItem from './ChatroomItem'
+
 import socket from '../features/socket'
 import { userSlice } from '../features/userSlice'
 import { chatroomsSlice } from '../features/chatroomsSlice'
-import ChatroomItem from './ChatroomItem'
 
 import { FontAwesome } from '@expo/vector-icons'
 import { Entypo } from '@expo/vector-icons'
@@ -25,6 +28,9 @@ function Home({ navigation, route }) {
       let chatroom = chatrooms.find(chatroom => {
         chatroom.users.find(e => e.id == data.user.id)
       })
+
+      console.log('test...')
+
       if (!chatroom) {
         const otherUser = data.user
 
@@ -40,9 +46,22 @@ function Home({ navigation, route }) {
       }
 
       dispatch(chatroomsSlice.actions.sendMessage({ chatroomID: chatroom.id, message: data.message }))
-    
-      console.log('end')
     })
+  }, [])
+
+  useEffect(() => {
+    const interval = setInterval(async () => {
+      const result = await axios({
+        method: 'GET',
+        url: 'http://192.168.100.13:3000/chatrooms',
+        headers: {
+          'Authorization': user.token
+        }
+      })
+
+      dispatch(chatroomsSlice.actions.updateChats(result.data.chatrooms))
+    }, 5000)
+    return () => clearInterval(interval)
   }, [])
 
   return (
