@@ -1,16 +1,18 @@
 import React from 'react'
 import { StyleSheet, View, Button } from 'react-native'
-import { useDispatch } from 'react-redux';
+import { useDispatch } from 'react-redux'
+import { useTheme } from '@react-navigation/native'
 
 import axios from 'axios'
-import socket from '../features/socket'
 
+import { chatroomsSlice } from '../features/chatroomsSlice'
 import { userSlice } from '../features/userSlice'
 
 import * as Google from 'expo-google-app-auth'
-import { chatroomsSlice } from '../features/chatroomsSlice';
 
 function SignIn() {
+  const { colors } = useTheme()
+
   const dispatch = useDispatch();
 
   async function signInWithGoogleAsync() {
@@ -26,8 +28,6 @@ function SignIn() {
           url: 'https://www.googleapis.com/userinfo/v2/me',
           headers: { Authorization: `Bearer ${result.accessToken}` }
         })
-
-        console.log(user.data)
 
         const login = await axios({
           method: 'POST',
@@ -49,10 +49,13 @@ function SignIn() {
     <View style={styles.container}>
       <Button
         title='LOG IN WITH GOOGLE'
+        color={colors.card}
         onPress={async () => await signInWithGoogleAsync()}
       />
+      <View style={{ marginBottom: 10 }} />
       <Button
         title='Test user 1'
+        color={colors.card}
         onPress={async () => {
           const login = await axios({
             method: 'POST',
@@ -72,8 +75,10 @@ function SignIn() {
           dispatch(userSlice.actions.signIn(loggedUser))
         }}
       />
+      <View style={{ marginBottom: 10 }} />
       <Button
         title='Test user 2'
+        color={colors.card}
         onPress={async () => {
           const login = await axios({
             method: 'POST',

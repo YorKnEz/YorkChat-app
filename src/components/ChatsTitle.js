@@ -1,21 +1,37 @@
 import React from 'react'
-import { StyleSheet, View, Image, Text } from 'react-native'
+import { StyleSheet, View, Image, Text, TouchableOpacity } from 'react-native'
 import { useSelector } from 'react-redux'
+import { useNavigation, useTheme } from '@react-navigation/native'
+
+import { Entypo } from '@expo/vector-icons'
 
 function ChatsTitle() {
+  const navigation = useNavigation()
+  const { colors } = useTheme()
+
   const user = useSelector(state => state.user)
 
   return (
     <View style={styles.container}>
-      <Image source={{ uri: user ? user.picture : null }} style={styles.image}/>
-      <Text style={styles.title}>Chats</Text>
+      <View style={styles.titleContainer}>
+        <Image source={{ uri: user ? user.picture : null }} style={styles.image}/>
+        <Text style={[styles.title, {color: colors.text}]}>Chats</Text>
+      </View>
+      <TouchableOpacity onPress={() => navigation.navigate('Settings')}>
+        <Entypo name="dots-three-vertical" size={18} color={colors.text} />
+      </TouchableOpacity>
     </View>
   )
 }
 
 const styles = StyleSheet.create({
   container: {
-    flexDirection: 'row'
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between'
+  },
+  titleContainer: {
+    flexDirection: 'row',
   },
   image: {
     width: 32,
@@ -26,7 +42,6 @@ const styles = StyleSheet.create({
   title: {
     marginLeft: 10,
     fontSize: 24,
-    color: '#fff',
     fontWeight: 'bold',
   }
 })

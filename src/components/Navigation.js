@@ -1,7 +1,8 @@
-import React from 'react';
-import { NavigationContainer } from '@react-navigation/native'
+import React from 'react'
+import { StatusBar } from 'react-native'
+import { useSelector } from 'react-redux'
+import { NavigationContainer, DefaultTheme } from '@react-navigation/native'
 import { createStackNavigator } from '@react-navigation/stack'
-import { useSelector } from 'react-redux';
 
 import SignIn from './SignIn'
 import Home from './Home'
@@ -9,7 +10,24 @@ import ChatsTitle from './ChatsTitle'
 import Chatroom from './Chatroom'
 import ChatroomTitle from './ChatroomTitle'
 import UserSearch from './UserSearch'
+import Settings from './Settings'
+import FullImage from './FullImage'
+import ChatroomOptions from './ChatroomOptions'
 
+// todo: tinker around with this
+const MyDarkTheme = {
+  ...DefaultTheme,
+  dark: true,
+  colors: {
+    primary: '#f48fb1',
+    header: '#121212',
+    background: '#121212',
+    card: '#323232',
+    text: '#eeeeee',
+    subtext: '#ababab',
+    secondary: '#0093ff',
+  }
+}
 
 const Stack = createStackNavigator()
 
@@ -17,14 +35,12 @@ const MyNavigationContainer = () => {
   const user = useSelector(state => state.user)
 
   return (
-    <NavigationContainer>
+    <NavigationContainer theme={MyDarkTheme}>
+      <StatusBar backgroundColor={MyDarkTheme.colors.background}/>
       <Stack.Navigator
         initialRouteName='Home'
-        screenOptions= {{
-          headerStyle: {
-              backgroundColor: '#004D40',
-          },
-          headerTintColor: '#fff'
+        screenOptions={{
+          headerTintColor: MyDarkTheme.colors.text,
         }}
       >
         {!user ? (
@@ -57,6 +73,26 @@ const MyNavigationContainer = () => {
             <Stack.Screen
               name="Search"
               component={UserSearch}
+            />
+            <Stack.Screen
+              name="Settings"
+              component={Settings}
+            />
+            <Stack.Screen
+              name="FullImage"
+              component={FullImage}
+              options={{
+                title: '',
+                headerTransparent: true
+              }}
+            />
+            <Stack.Screen
+              name="ChatroomOptions"
+              component={ChatroomOptions}
+              options={{
+                title: '',
+                headerStyle: {backgroundColor: MyDarkTheme.colors.background}
+              }}
             />
           </>
         )}

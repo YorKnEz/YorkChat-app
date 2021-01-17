@@ -1,4 +1,4 @@
-import { createSlice } from "@reduxjs/toolkit";
+import { createSlice } from "@reduxjs/toolkit"
 
 const initialState = null
 
@@ -10,7 +10,7 @@ export const userSlice = createSlice({
       return action.payload
     },
     signOut(state, action) {
-      return initialState;
+      return initialState
     },
   }
 })

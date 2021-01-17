@@ -1,14 +1,17 @@
 import React from 'react'
 import { StyleSheet, TouchableOpacity, Text, Image } from 'react-native'
+import { useTheme } from '@react-navigation/native'
 
 export default function UserItem({ user, onPress }) {
+  const { colors } = useTheme()
+
   return (
     <TouchableOpacity
       style={styles.container}
       onPress={onPress}
     >
       <Image style={styles.image} source={{ uri: user.picture }}/>
-      <Text style={styles.title}>{user.name}</Text>
+      <Text style={[styles.title, { color: colors.text }]}>{user.name}</Text>
     </TouchableOpacity>
   )
 }
@@ -28,7 +31,6 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 18,
-    color: 'black',
     fontWeight: 'bold',
   },
 })

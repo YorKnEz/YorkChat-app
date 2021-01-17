@@ -1,18 +1,20 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { FlatList, StyleSheet, Text, View, TextInput, TouchableOpacity, Button } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux'
+import { useTheme } from '@react-navigation/native'
 
 import axios from 'axios'
 
 import Message from './Message'
 
-import socket from '../features/socket'
-import { chatroomsSlice } from '../features/chatroomsSlice'
 import { messagesSlice } from '../features/messagesSlice'
 
+import * as ImagePicker from 'expo-image-picker'
 import { Feather } from '@expo/vector-icons'
 
 function Chatroom({ route }) {
+  const { colors } = useTheme()
+
   const [chatMessage, setChatMessage] = useState('') // input
 
   const inputRef = useRef(null) // for clearing the input
@@ -26,7 +28,7 @@ function Chatroom({ route }) {
   const messages = chatroomMessages ? chatroomMessages.messages : []
 
   useEffect(() => {
-    const interval = setInterval(async () => {
+    const fetchMessages = async () => {
       const result = await axios({
         method: 'GET',
         url: 'http://192.168.100.13:3000/chatrooms/' + route.params.id + '/messages',
@@ -39,9 +41,44 @@ function Chatroom({ route }) {
         chatroomId: route.params.id,
         messages: result.data.messages
       }))
-    }, 5000)
-    return () => clearInterval(interval)
+    }
+    fetchMessages()
   }, [])
+
+  const sendImage = async () => {
+    // ask for permission to access gallery
+    const permissionResult = await ImagePicker.requestCameraPermissionsAsync()
+    if (permissionResult.granted === false) {
+      alert('Permission to access camera roll is required!')
+      return
+    }
+
+    // if the permission was given open gallery
+    const pickerResult = await ImagePicker.launchImageLibraryAsync()
+
+    // create a form for the image
+    const formData = new FormData()
+    formData.append('image', {
+      uri: pickerResult.uri,
+      type: 'image/png',
+      name: pickerResult.uri,
+    })
+
+    // create the message object
+    const result = await axios({
+      method: 'POST',
+      url: 'http://192.168.100.13:3000/chatrooms/' + route.params.id + '/messages/image',
+      headers: {
+        'Authorization': user.token
+      },
+      data: formData
+    })
+
+    dispatch(messagesSlice.actions.addMessage({
+      chatroomId: route.params.id,
+      message: result.data.message
+    }))
+  }
 
   const sendMessage = async () => {
     // create the message object
@@ -78,16 +115,25 @@ function Chatroom({ route }) {
         inverted={true}
       />
       <View style={styles.sendBar}>
+        <TouchableOpacity
+          onPress={async () => await sendImage()}
+          style={styles.sendIcon}
+        >
+          <Feather name="image" size={20} color={colors.primary} />
+        </TouchableOpacity>
         <TextInput
-          style={styles.input}
+          style={[styles.input, { color: colors.text, backgroundColor: colors.card }]}
           onChangeText={chatMessage => setChatMessage(chatMessage)}
           placeholder='Write a message'
+          placeholderTextColor={colors.subtext}
           ref={inputRef}
+          maxLength={255}
         />
         <TouchableOpacity
-          onPress={async() => await sendMessage()}
+          onPress={async () => await sendMessage()}
+          style={styles.sendIcon}
         >
-          <Feather name="send" size={24} color="lightgray" />
+          <Feather name="send" size={20} color={colors.primary} />
         </TouchableOpacity>
       </View>
     </View>
@@ -97,21 +143,24 @@ function Chatroom({ route }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  input: {
-    height: 40,
-    width: '90%',
   },
   sendBar: {
     flexDirection: 'row',
     alignItems: 'center',
-    borderWidth: 1,
-    borderColor: 'lightgray',
-    paddingLeft: 20,
+    justifyContent: 'space-between',
+    height: 50,
+    width: '100%',
+    paddingLeft: 10,
     paddingRight: 10,
+  },
+  input: {
+    height: 40,
+    width: '80%',
+    paddingLeft: 20,
+    paddingRight: 20,
+    borderRadius: 100,
   },
 });
   

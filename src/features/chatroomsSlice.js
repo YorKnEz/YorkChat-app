@@ -1,5 +1,6 @@
 import { createSlice } from "@reduxjs/toolkit"
 import produce from "immer"
+import { messagesSlice } from "./messagesSlice"
 
 const initialState = []
 
@@ -36,6 +37,14 @@ export const chatroomsSlice = createSlice({
 
       return newState
     }
+  },
+  extraReducers: (builder) => {
+    builder
+      .addCase(messagesSlice.actions.addMessage, (state, action) => {
+        const chatrooms = state
+        const chatroomToUpdateIndex = chatrooms.findIndex(chatroom => chatroom.id === action.payload.chatroomId)
+        state[chatroomToUpdateIndex].lastMessage = action.payload.lastMessage
+      })
   }
 })
 

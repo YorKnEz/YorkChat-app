@@ -1,13 +1,20 @@
 import React, { useState } from 'react'
 import { View, Text, StyleSheet, Image, Pressable } from 'react-native'
+import { useTheme } from '@react-navigation/native'
 
 function ChatroomItem({ chatroom, onPress }) {
+  const { colors } = useTheme()
+
   return (
     <Pressable style={styles.container} onPress={onPress}>
       <Image style={styles.picture} source={{ uri: chatroom ? chatroom.picture : null }}/>
       <View style={styles.subcontainer}>
-        <Text style={styles.title}>{chatroom.name}</Text>
-        <Text style={styles.lastMessage}>{chatroom.lastMessage}</Text>
+        <Text style={[styles.title, { color: colors.text }]}>{chatroom.name}</Text>
+        <Text 
+          style={[styles.lastMessage], { color: colors.subtext }}
+          numberOfLines={1}
+          ellipsizeMode='tail'
+        >{chatroom.lastMessage ? chatroom.lastMessage : ''}</Text>
       </View>
     </Pressable>
   )
@@ -16,6 +23,7 @@ function ChatroomItem({ chatroom, onPress }) {
 const styles = StyleSheet.create({
   container: {
     height: 80,
+    paddingRight: 10,
     flexDirection: 'row',
     alignItems: 'center',
   },
@@ -27,16 +35,15 @@ const styles = StyleSheet.create({
     marginRight: 10,
   },
   subcontainer: {
+    flex: 1,
     flexDirection: 'column',
   },
   title: {
     fontSize: 18,
-    color: 'black',
     fontWeight: 'bold',
   },
   lastMessage: {
     fontSize: 12,
-    color: 'black',
   }
 })
 

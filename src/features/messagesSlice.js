@@ -17,6 +17,15 @@ export const messagesSlice = createSlice({
       // add the message
       if (messagesIndex != -1) {
         state[messagesIndex].messages = [action.payload.message, ...state[messagesIndex].messages]
+      } else {
+        const newState = produce(state, draft => {
+          draft.push({
+            chatroomId: action.payload.chatroomId,
+            messages: [action.payload.message]
+          })
+        })
+
+        return newState
       }
     },
     updateMessages(state, action) {

@@ -1,17 +1,20 @@
 import React, { useEffect, useState } from 'react'
-import { StyleSheet, TextInput, View, FlatList, Image, Text } from 'react-native'
+import { StyleSheet, TextInput, View, FlatList, Text } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
+import { useTheme } from '@react-navigation/native'
 
 import axios from 'axios'
 
-import { chatroomsSlice } from '../features/chatroomsSlice'
-
 import UserItem from './UserItem'
+
+import { chatroomsSlice } from '../features/chatroomsSlice'
 
 import { FontAwesome } from '@expo/vector-icons'
 import { Entypo } from '@expo/vector-icons'
 
 export default function UserSearch({ navigation }) {
+  const { colors } = useTheme()
+
   const dispatch = useDispatch()
 
   const [users, setUsers] = useState([]) // user list
@@ -72,12 +75,12 @@ export default function UserSearch({ navigation }) {
   return (
     <FlatList
       ListHeaderComponent={(
-        <View style={styles.searchBar}>
-          <FontAwesome name="search" size={14} color="black" />
+        <View style={[styles.searchBar, {backgroundColor: colors.card}]}>
+          <FontAwesome name="search" size={14} color={colors.subtext} />
           <TextInput
-            style={styles.input}
+            style={[styles.input, {color: colors.text}]}
             placeholder='Search'
-            placeholderTextColor='#000'
+            placeholderTextColor={colors.subtext}
             onChangeText={text => {filterUsers(text)}}
           />
         </View>
@@ -87,8 +90,8 @@ export default function UserSearch({ navigation }) {
       keyExtractor={item => String(item.id)}
       ListEmptyComponent={(
         <View style={styles.containerEmpty}>
-          <Entypo name="emoji-sad" size={24} color="lightgray" />
-          <Text style={styles.titleEmpty}>No conversations available.</Text>
+          <Entypo name="emoji-sad" size={24} color={colors.subtext} />
+          <Text style={[styles.titleEmpty, {color: colors.subtext}]}>No conversations available.</Text>
         </View>
       )}
     />
@@ -100,12 +103,12 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     alignSelf: 'center',
-    backgroundColor: 'lightgray',
+    width: '90%',
+    height: 40,
+    borderRadius: 100,
+    margin: 10,
     padding: 10,
     paddingLeft: 20,
-    borderRadius: 100,
-    width: '90%',
-    margin: 5,
   },
   input: {
     marginLeft: 10,
@@ -118,7 +121,6 @@ const styles = StyleSheet.create({
   },
   titleEmpty: {
     fontSize: 18,
-    color: 'lightgray',
     marginLeft: 10,
   },
 })

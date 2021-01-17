@@ -1,13 +1,14 @@
 import React from 'react'
 import { StyleSheet, View, Image, Text, TouchableOpacity } from 'react-native'
 import { useSelector, useDispatch } from 'react-redux'
-import { useNavigation } from '@react-navigation/native'
+import { useNavigation, useTheme } from '@react-navigation/native'
 
 import { chatroomsSlice } from '../features/chatroomsSlice'
 
-import { MaterialIcons } from '@expo/vector-icons'
+import { Entypo } from '@expo/vector-icons'
 
 function ChatsTitle({ id }) {
+  const { colors } = useTheme()
   const navigation = useNavigation()
 
   const dispatch = useDispatch()
@@ -15,20 +16,24 @@ function ChatsTitle({ id }) {
   const chatrooms = useSelector(state => state.chatrooms)
   const chatroom = chatrooms.find(chatroom => chatroom.id == id)
 
-  const deleteChat = () => {
-    navigation.popToTop() // go home
+  // const deleteChat = () => {
+  //   navigation.popToTop() // go home
     
-    dispatch(chatroomsSlice.actions.deleteChat(id))
-  }
+  //   dispatch(chatroomsSlice.actions.deleteChat(id))
+  // }
 
   return (
     <View style={styles.container}>
       <View style={styles.subcontainer}>
         <Image style={styles.image} source={{ uri: chatroom ? chatroom.picture : null }} />
-        <Text style={styles.title}>{chatroom ? chatroom.name : ''}</Text>
+        <Text style={[styles.title, { color: colors.text }]}>{chatroom ? chatroom.name : ''}</Text>
       </View>
-      <TouchableOpacity style={styles.deleteButton} onPress={() => deleteChat()}>
-      <MaterialIcons name="delete" size={28} color="red" />
+      <TouchableOpacity
+        onPress={() => navigation.navigate('ChatroomOptions', {
+          chatroom
+        })}
+      >
+      <Entypo name="dots-three-vertical" size={18} color={colors.primary} />
       </TouchableOpacity>
     </View>
   )
@@ -38,14 +43,11 @@ const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
     alignItems: 'center',
-  },
-  deleteButton: {
-    alignItems: 'center',
+    justifyContent: 'space-between'
   },
   subcontainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    width: '93%',
   },
   image: {
     width: 32,
@@ -55,7 +57,6 @@ const styles = StyleSheet.create({
   title: {
     marginLeft: 10,
     fontSize: 18,
-    color: '#fff',
     fontWeight: 'bold',
   }
 })
